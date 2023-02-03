@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "/beverage-grpc";
+
+service BeveragesManagement {
+  rpc CreateBeverage(CreateBeverageRequest) returns (Beverage);
+}
+
+enum BeverageType {
+  BEVERAGE_TYPE_UNSPECIFIED = 0;
+  BEVERAGE_TYPE_BEER        = 1;
+  BEVERAGE_TYPE_VINE        = 2;
+  BEVERAGE_TYPE_VODKA       = 3;
+  BEVERAGE_TYPE_GIN         = 4;
+  BEVERAGE_TYPE_RUM         = 5;
+}
+
+message beverageMainAttributes {
+  BeverageType type = 1;
+  string name = 2;
+  int32 volume = 3;
+}
+
+message CreateBeverageRequest {
+    beverageMainAttributes attr = 1;
+}
+
+message Beverage {
+  int64 id = 1;
+  beverageMainAttributes attr = 2;
+  int32 price = 3;
+}
