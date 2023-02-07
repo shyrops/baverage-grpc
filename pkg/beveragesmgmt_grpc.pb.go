@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: beveragesmgmt.proto
 
-package beverage_grpc
+package beverage
 
 import (
 	context "context"
