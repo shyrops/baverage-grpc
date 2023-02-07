@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
@@ -32,27 +33,38 @@ func main() {
 	defer cancel()
 
 	for _, bev := range prepareBeverages() {
-		r, err := c.CreateBeverage(
+		res, err := c.CreateBeverage(
 			ctx,
 			&pb.CreateBeverageRequest{
 				Attr: &pb.BeverageMainAttributes{
 					Type:   bev.beverageType,
 					Volume: bev.volume,
-					Name:   bev.name},
+					Name:   bev.name,
+				},
 			},
 		)
 		if err != nil {
-			log.Fatalf("could not create bevrage: %v", err)
+			log.Fatalf("could not create beverage: %v", err)
 		}
-		attr := r.GetAttr()
-		log.Printf(`New beverage details:
+		attr := res.GetAttr()
+		fmt.Printf(`New beverage details:
 ID: %d
 Name: %s
 Type: %d
 Volume: %d
 Price: %d
 
-`, r.GetId(), attr.GetName(), attr.GetType(), attr.GetVolume(), r.GetPrice())
+`, res.GetId(), attr.GetName(), attr.GetType(), attr.GetVolume(), res.GetPrice())
+	}
+
+	params := &pb.GetBeveragesParams{}
+	res, err := c.GetBeverages(ctx, params)
+	if err != nil {
+		log.Fatalf("could not get beverages list: %v", err)
+	}
+	fmt.Print("\nBEVERAGES LIST\n")
+	for _, bev := range res.GetBeverages() {
+		fmt.Printf("Beverage: %v\n", bev)
 	}
 
 }

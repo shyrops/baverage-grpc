@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BeveragesManagementClient interface {
 	CreateBeverage(ctx context.Context, in *CreateBeverageRequest, opts ...grpc.CallOption) (*Beverage, error)
+	GetBeverages(ctx context.Context, in *GetBeveragesParams, opts ...grpc.CallOption) (*BeverageList, error)
 }
 
 type beveragesManagementClient struct {
@@ -42,11 +43,21 @@ func (c *beveragesManagementClient) CreateBeverage(ctx context.Context, in *Crea
 	return out, nil
 }
 
+func (c *beveragesManagementClient) GetBeverages(ctx context.Context, in *GetBeveragesParams, opts ...grpc.CallOption) (*BeverageList, error) {
+	out := new(BeverageList)
+	err := c.cc.Invoke(ctx, "/api.BeveragesManagement/GetBeverages", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BeveragesManagementServer is the server API for BeveragesManagement service.
 // All implementations must embed UnimplementedBeveragesManagementServer
 // for forward compatibility
 type BeveragesManagementServer interface {
 	CreateBeverage(context.Context, *CreateBeverageRequest) (*Beverage, error)
+	GetBeverages(context.Context, *GetBeveragesParams) (*BeverageList, error)
 	mustEmbedUnimplementedBeveragesManagementServer()
 }
 
@@ -56,6 +67,9 @@ type UnimplementedBeveragesManagementServer struct {
 
 func (UnimplementedBeveragesManagementServer) CreateBeverage(context.Context, *CreateBeverageRequest) (*Beverage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateBeverage not implemented")
+}
+func (UnimplementedBeveragesManagementServer) GetBeverages(context.Context, *GetBeveragesParams) (*BeverageList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBeverages not implemented")
 }
 func (UnimplementedBeveragesManagementServer) mustEmbedUnimplementedBeveragesManagementServer() {}
 
@@ -88,6 +102,24 @@ func _BeveragesManagement_CreateBeverage_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BeveragesManagement_GetBeverages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBeveragesParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BeveragesManagementServer).GetBeverages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.BeveragesManagement/GetBeverages",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BeveragesManagementServer).GetBeverages(ctx, req.(*GetBeveragesParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BeveragesManagement_ServiceDesc is the grpc.ServiceDesc for BeveragesManagement service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -98,6 +130,10 @@ var BeveragesManagement_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateBeverage",
 			Handler:    _BeveragesManagement_CreateBeverage_Handler,
+		},
+		{
+			MethodName: "GetBeverages",
+			Handler:    _BeveragesManagement_GetBeverages_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

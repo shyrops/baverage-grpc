@@ -6,6 +6,7 @@ option go_package = "/beverage";
 
 service BeveragesManagement {
   rpc CreateBeverage(CreateBeverageRequest) returns (Beverage);
+  rpc GetBeverages(GetBeveragesParams) returns (BeverageList);
 }
 
 enum BeverageType {
@@ -31,4 +32,12 @@ message Beverage {
   uint64 id = 1;
   beverageMainAttributes attr = 2;
   int32 price = 3;
+}
+
+message GetBeveragesParams {
+  // Implement here getting users rules
+}
+
+message BeverageList {
+  repeated Beverage beverages = 1;
 }

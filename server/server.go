@@ -16,8 +16,28 @@ const (
 	port = ":50051"
 )
 
+func NewServer() *beverageManagementServer {
+	return &beverageManagementServer{
+		beverageList: &pb.BeverageList{},
+	}
+}
+
 type beverageManagementServer struct {
 	pb.UnimplementedBeveragesManagementServer
+	beverageList *pb.BeverageList
+}
+
+func (b *beverageManagementServer) Run() error {
+	lis, err := net.Listen("tcp", port)
+	if err != nil {
+		log.Fatalf("failed to init listener: %v", err)
+	}
+
+	s := grpc.NewServer()
+	pb.RegisterBeveragesManagementServer(s, b)
+	log.Printf("server listening on: %s", lis.Addr())
+
+	return s.Serve(lis)
 }
 
 func (b *beverageManagementServer) CreateBeverage(ctx context.Context, req *pb.CreateBeverageRequest) (bev *pb.Beverage, err error) {
@@ -39,22 +59,21 @@ func (b *beverageManagementServer) CreateBeverage(ctx context.Context, req *pb.C
 		Attr:  attr,
 		Price: price,
 	}
+	b.beverageList.Beverages = append(b.beverageList.Beverages, bev)
 
 	return bev, nil
 }
 
+func (b *beverageManagementServer) GetBeverages(
+	ctx context.Context,
+	req *pb.GetBeveragesParams,
+) (*pb.BeverageList, error) {
+	return b.beverageList, nil
+}
+
 func main() {
-	lis, err := net.Listen("tcp", port)
-	if err != nil {
-		log.Fatalf("failed to init listener: %v", err)
-	}
-
-	s := grpc.NewServer()
-	pb.RegisterBeveragesManagementServer(s, &beverageManagementServer{})
-	log.Printf("server listening on: %s", lis.Addr())
-
-	if err = s.Serve(lis); err != nil {
-		log.Fatalf("failed serve: %v", err)
+	if err := NewServer().Run(); err != nil {
+		log.Fatalf("failed to serve: %v", err)
 	}
 }
 
