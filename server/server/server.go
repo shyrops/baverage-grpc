@@ -26,7 +26,7 @@ func NewServer() *beverageManagementServer {
 
 type beverageManagementServer struct {
 	pb.UnimplementedBeveragesManagementServer
-	storage storage.Storage
+	storage storage.BeverageStorage
 }
 
 func (b *beverageManagementServer) Run() error {
@@ -43,6 +43,10 @@ func (b *beverageManagementServer) Run() error {
 }
 
 func (b *beverageManagementServer) CreateBeverage(ctx context.Context, req *pb.CreateBeverageRequest) (bev *pb.Beverage, err error) {
+	if req == nil {
+		log.Fatalf("create beverage: nil request params")
+	}
+
 	attr := req.GetAttr()
 	log.Printf(
 		"Start creating new beverage with name: %s, type: %s, volume: %d",
@@ -62,14 +66,14 @@ func (b *beverageManagementServer) CreateBeverage(ctx context.Context, req *pb.C
 		Price: price,
 	}
 
-	return b.storage.StoreBeverage(ctx, bev)
+	return b.storage.Add(ctx, bev)
 }
 
 func (b *beverageManagementServer) GetBeverages(
 	ctx context.Context,
 	req *pb.GetBeveragesParams,
 ) (*pb.BeverageList, error) {
-	return b.storage.GetBeverages(ctx)
+	return b.storage.List(ctx)
 }
 
 func calculatePrice(attr *pb.BeverageMainAttributes) (int32, error) {

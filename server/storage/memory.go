@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"log"
 
 	pb "beverage-grpc/pkg"
 )
@@ -18,12 +19,16 @@ func NewMemoryStorage() *memory {
 	}
 }
 
-func (m *memory) StoreBeverage(ctx context.Context, beverage *pb.Beverage) (*pb.Beverage, error) {
+func (m *memory) Add(ctx context.Context, beverage *pb.Beverage) (*pb.Beverage, error) {
+	if beverage == nil {
+		log.Fatalf("mem add: mil beverage provided")
+	}
+
 	m.beverageList.Beverages = append(m.beverageList.Beverages, beverage)
 
 	return beverage, nil
 }
 
-func (m *memory) GetBeverages(ctx context.Context) (*pb.BeverageList, error) {
+func (m *memory) List(ctx context.Context) (*pb.BeverageList, error) {
 	return m.beverageList, nil
 }

@@ -20,7 +20,11 @@ func NewFileStorage() *file {
 	return &file{}
 }
 
-func (f *file) StoreBeverage(ctx context.Context, beverage *pb.Beverage) (*pb.Beverage, error) {
+func (f *file) Add(ctx context.Context, beverage *pb.Beverage) (*pb.Beverage, error) {
+	if beverage == nil {
+		log.Fatalf("file add: nil bevrage provided")
+	}
+
 	var beveragesList *pb.BeverageList = &pb.BeverageList{}
 
 	readedBytes, err := os.ReadFile("files/beverages.json")
@@ -55,7 +59,7 @@ func (f *file) StoreBeverage(ctx context.Context, beverage *pb.Beverage) (*pb.Be
 	return beverage, nil
 }
 
-func (f *file) GetBeverages(ctx context.Context) (*pb.BeverageList, error) {
+func (f *file) List(ctx context.Context) (*pb.BeverageList, error) {
 	jsonBytes, err := os.ReadFile("server/beverages.json")
 	if err != nil {
 		log.Fatalf("error reading file: %v", err)
