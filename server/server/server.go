@@ -1,15 +1,17 @@
-package main
+package server
 
 import (
 	"context"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"log"
 	"math/rand"
 	"net"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	pb "beverage-grpc/pkg"
+	"beverage-grpc/server/storage"
 )
 
 const (
@@ -18,13 +20,13 @@ const (
 
 func NewServer() *beverageManagementServer {
 	return &beverageManagementServer{
-		beverageList: &pb.BeverageList{},
+		storage: storage.NewStorage("file"),
 	}
 }
 
 type beverageManagementServer struct {
 	pb.UnimplementedBeveragesManagementServer
-	beverageList *pb.BeverageList
+	storage storage.Storage
 }
 
 func (b *beverageManagementServer) Run() error {
@@ -59,22 +61,15 @@ func (b *beverageManagementServer) CreateBeverage(ctx context.Context, req *pb.C
 		Attr:  attr,
 		Price: price,
 	}
-	b.beverageList.Beverages = append(b.beverageList.Beverages, bev)
 
-	return bev, nil
+	return b.storage.StoreBeverage(ctx, bev)
 }
 
 func (b *beverageManagementServer) GetBeverages(
 	ctx context.Context,
 	req *pb.GetBeveragesParams,
 ) (*pb.BeverageList, error) {
-	return b.beverageList, nil
-}
-
-func main() {
-	if err := NewServer().Run(); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+	return b.storage.GetBeverages(ctx)
 }
 
 func calculatePrice(attr *pb.BeverageMainAttributes) (int32, error) {
